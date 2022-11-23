@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot</title>
+    <style>
+        body{
+            background:white;
+            
+        }
+        form{
+            background:white;
+            color: blue;
+        }
+        
+        input[type="text"]
+        {
+            font-size:16px;
+        }
+
+        p{
+            margin:6px 0px;
+            background:white;
+            color:blue;
+            font-family: Arial, Helvetica, sans-serif;
+
+        }
+        .container{
+        }
+        h1{
+            text-align:left;
+            background:blue;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .button{ 
+            background: white;
+            color:blue;
+            border:2px solid blue;
+            font-size:16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>translate4you</h1>
+
+    <div class="userInput">
+            <form action="/translate" method="post">
+                <input type="text" name="input" size = "100">
+                <button class = "button" >Submit</button>
+            </form>
+    </div>
+    <br>
+    {{latest_msg}}
+    <div class="replies">
+            {% for msg in messages %}
+            <p>{{msg}}</p>
+            {% endfor %}
+     </div>
+</body>
+</html>
