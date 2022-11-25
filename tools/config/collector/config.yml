@@ -20,10 +20,9 @@ receivers:
     api_version: 1.24
     provide_per_core_cpu_metrics: true
 exporters:
-  otlp:
-    endpoint: localhost:4317
-  otlp:
-    endpoint: https://localhost:4318/v1/traces
+  otlp/honeycomb:
+    endpoint: https://api.honeycomb.io
+    headers: x-honeycomb-team=3KGtw5BwzqkAye3GFwY59G
   logging:
     loglevel: debug
   jaeger:
@@ -54,10 +53,10 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [otlp, jaeger]
+      exporters: [otlp/honeycomb, jaeger, logging]
     metrics:
       receivers: [hostmetrics, otlp]
       exporters: [prometheus, logging]
     logs:
       receivers: [otlp]
-      exporters: [loki]
+      exporters: [loki, logging]
