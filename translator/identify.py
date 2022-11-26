@@ -22,7 +22,7 @@ configparser = configparser.ConfigParser()
 configparser.read('app.ini')
 
 host = configparser['DEFAULT']['host']
-translate_service_port = configparser['DEFAULT']['translate_service_port']
+identify_service_port = configparser['DEFAULT']['identify_service_port']
 api_key = configparser['DEFAULT']['api_key']
 api_url = configparser['DEFAULT']['api_url']
 model_id = configparser['DEFAULT']['model_id']
@@ -32,7 +32,7 @@ app = Flask(__name__)
 
 # Set otel service name
 resource = Resource(attributes={
-    SERVICE_NAME: "translate_service"
+    SERVICE_NAME: "identify_service"
 })
 
 # Initialize tracing and an exporter
@@ -54,28 +54,26 @@ chat_history = []
 def healthcheck():
     return __name__
 
-@app.route("/api/translate", methods=["POST"])
+@app.route("/api/identify", methods=["POST"])
 def translate():
-        with tracer.start_as_current_span("POST /api/translate") as span:
+        with tracer.start_as_current_span("POST /api/identify") as span:
             input_sentence = request.args.get("input_sentence")
-            language_model = request.args.get("language_model")
+            language = ""
 
             current_span=trace.get_current_span()
             current_span.set_attribute(SpanAttributes.HTTP_METHOD, "POST")
-            current_span.set_attribute(SpanAttributes.HTTP_URL, "http://"+host+":"+translate_service_port+"/api/translate")  
+            current_span.set_attribute(SpanAttributes.HTTP_URL, "http://"+host+":"+ identify_service_port+"/api/identify")  
 
             print("input_sentence=", input_sentence)
-            print("language_model=", language_model)
 
             with tracer.start_as_current_span("Call translator") as span:
                 current_span=trace.get_current_span()
                 current_span.set_attribute("input_sentence=", input_sentence)
-                current_span.set_attribute("language_model=", language_model)
 
                 response = None
 
-                #try:
-                # Prepare the Authenticator
+               # try:
+                    # Prepare the Authenticator
                 authenticator = IAMAuthenticator(api_key)
                 language_translator = LanguageTranslatorV3(
                     version='2018-05-01',
@@ -84,33 +82,31 @@ def translate():
 
                 language_translator.set_service_url(api_url )
 
-                input_model = model_id
+                # Identify
+                response = language_translator.identify(text=input_sentence)
 
-                if (language_model != "" and language_model != None):
-                    input_model = language_model
+                print(response)
 
-                print(input_model)
-                source = input_model[0:2]
-                target = input_model[3:5]
+                probability = 0
+                language = ""
 
-                print("source=",source)
-                print("target=", target)
-
-                # Translate
-                response = language_translator.translate(
-                    text=input_sentence,
-                    source=source, target=target).get_result()
-
-                output_sentence = " "
-
-                for s in response["translations"]:
-                    output_sentence = s["translation"]
-                #except:
-                #    current_span.set_status("Failed")
-        return output_sentence
-
-
+                for lang in response.result["languages"]:
+                    p = lang["confidence"]
+                    if (p > probability):
+                        probability = p
+                        l = lang["language"]
+                    
+                language = l
+                    
+                print("language=",language)
+                print("probability", probability)
+                current_span.set_attribute("language=", language)
+                current_span.set_attribute("probability=", probability)
+            #    except:
+            #        print("Execption!")
+            #        current_span.set_status("Failed")
+        return language
 
 if __name__ == "__main__":
-    app.run(host=host, port=translate_service_port, debug=True, threaded=False)
+    app.run(host=host, port=identify_service_port, debug=True, threaded=False)
 #    app.run(ssl_context='adhoc')
