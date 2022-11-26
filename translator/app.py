@@ -19,8 +19,10 @@ configparser = configparser.ConfigParser()
 configparser.read('app.ini')
 
 host = configparser['DEFAULT']['host']
-port = configparser['DEFAULT']['port']
-server_port = configparser['DEFAULT']['server_port']
+app_service_port = configparser['DEFAULT']['app_service_port']
+detect_service_port = configparser['DEFAULT']['detect_service_port']
+correct_service_port = configparser['DEFAULT']['correct_service_port']
+translate_service_port = configparser['DEFAULT']['translate_service_port']
 model_id = configparser['DEFAULT']['model_id']
 
 # Create app
@@ -75,7 +77,7 @@ def process_request():
             with tracer.start_as_current_span("process_request(): POST /translate") as span:
                 current_span=trace.get_current_span()
                 current_span.set_attribute(SpanAttributes.HTTP_METHOD, "POST")
-                current_span.set_attribute(SpanAttributes.HTTP_URL, "http://"+host+":"+port+"/translate")  
+                current_span.set_attribute(SpanAttributes.HTTP_URL, "http://"+host+":"+app_service_port+"/translate")  
                 # Get input sentence
                 with tracer.start_as_current_span("process_request(): get form input") as span:
                     input_sentence = request.form.get("input")
@@ -83,22 +85,22 @@ def process_request():
                     current_span.set_attribute("model_id=", model_id)
 
                 with tracer.start_as_current_span("process_request(): call translate server") as span:
-                    url = "http://127.0.0.1:" + server_port+ "/api/translate"
+                    url = "http://127.0.0.1:" + translate_service_port+ "/api/translate"
                     response = requests.post(url=url,params={'input_sentence':input_sentence,'language_model':model_id})
 
                     output_sentence = response.text
                     current_span.set_attribute("output_sentence=", output_sentence)
 
                 with tracer.start_as_current_span("process_request(): prepare output") as span:
-                    chat_history.append("PL: " +str(output_sentence))
-                    chat_history.append("EN: " +input_sentence)
-                    chat_history.append("***")
-                
+                    chat_history = []
+                    chat_history.append(str(output_sentence))
+                    chat_history.append("# " + input_sentence)
+
                     history_copy = chat_history.copy()
                     history_copy.reverse()
 
                 return render_template("./translate.html", messages = history_copy)
 
 if __name__ == "__main__":
-    app.run(host=host, port=port, debug=True, threaded=False)
+    app.run(host=host, port=app_service_port, debug=True, threaded=False)
 #    app.run(ssl_context='adhoc')

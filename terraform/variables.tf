@@ -1,7 +1,7 @@
 variable id {
   description = "Lab id"
   type        = string
-  default     = "lab001b"
+  default     = "lab001"
 }
 
 variable ibmcloud_api_key {

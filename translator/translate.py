@@ -19,10 +19,10 @@ import json
 # Read configuration
 
 configparser = configparser.ConfigParser()
-configparser.read('server.ini')
+configparser.read('app.ini')
 
 host = configparser['DEFAULT']['host']
-port = configparser['DEFAULT']['port']
+translate_service_port = configparser['DEFAULT']['translate_service_port']
 api_key = configparser['DEFAULT']['api_key']
 api_url = configparser['DEFAULT']['api_url']
 model_id = configparser['DEFAULT']['model_id']
@@ -62,7 +62,7 @@ def translate():
 
             current_span=trace.get_current_span()
             current_span.set_attribute(SpanAttributes.HTTP_METHOD, "POST")
-            current_span.set_attribute(SpanAttributes.HTTP_URL, "http://"+host+":"+port+"/api/translate")  
+            current_span.set_attribute(SpanAttributes.HTTP_URL, "http://"+host+":"+translate_service_port+"/api/translate")  
 
             print("input_sentence=", input_sentence)
             print("language_model=", language_model)
@@ -107,5 +107,5 @@ def translate():
 
 
 if __name__ == "__main__":
-    app.run(host=host, port=port, debug=True, threaded=False)
+    app.run(host=host, port=translate_service_port, debug=True, threaded=False)
 #    app.run(ssl_context='adhoc')
