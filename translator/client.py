@@ -23,11 +23,12 @@ configparser.read('app.ini')
 host = configparser['DEFAULT']['host']
 app_service_port = configparser['DEFAULT']['app_service_port']
 client_service_port = configparser['DEFAULT']['client_service_port']
+client_service_name = configparser['DEFAULT']['client_service_name']
 
 
 # Set otel service name
 resource = Resource(attributes={
-    SERVICE_NAME: "client_service"
+    SERVICE_NAME: client_service_name
 })
 
 # Initialize tracing and an exporter

@@ -23,6 +23,9 @@ configparser.read('app.ini')
 
 host = configparser['DEFAULT']['host']
 translate_service_port = configparser['DEFAULT']['translate_service_port']
+
+translate_service_name = configparser['DEFAULT']['translate_service_name']
+
 api_key = configparser['DEFAULT']['api_key']
 api_url = configparser['DEFAULT']['api_url']
 model_id = configparser['DEFAULT']['model_id']
@@ -32,7 +35,7 @@ app = Flask(__name__)
 
 # Set otel service name
 resource = Resource(attributes={
-    SERVICE_NAME: "translate_service"
+    SERVICE_NAME: translate_service_name
 })
 
 # Initialize tracing and an exporter
