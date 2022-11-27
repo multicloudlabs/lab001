@@ -21,7 +21,6 @@ configparser.read('app.ini')
 host = configparser['DEFAULT']['host']
 app_service_port = configparser['DEFAULT']['app_service_port']
 identify_service_port = configparser['DEFAULT']['identify_service_port']
-correct_service_port = configparser['DEFAULT']['correct_service_port']
 translate_service_port = configparser['DEFAULT']['translate_service_port']
 model_id = configparser['DEFAULT']['model_id']
 target_language = configparser['DEFAULT']['target_language']
@@ -107,7 +106,7 @@ def process_api_request():
             # Get input sentence
             with tracer.start_as_current_span("process_api_request(): get input_sentence") as span:
                 input_sentence = request.args.get("input_sentence")
-                
+
                 current_span.set_attribute("input_sentence=", input_sentence)
                 current_span.set_attribute("model=", model)
 
